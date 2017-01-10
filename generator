@@ -1,0 +1,67 @@
+#!/usr/bin/env ruby
+
+def divider
+    puts "---"
+end
+
+puts "Paste your markdown:"
+puts "(Type 'END' on a new line to end input)"
+
+divider
+
+$/ = "END"
+user_input = STDIN.gets
+
+divider
+
+begin
+    markdown = user_input.split("\n")
+rescue
+    err_message = <<EOF
+
+
+ERROR: UTF-8 parse error occurred
+
+Please paste these lines into your terminal:
+
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+Then try running this generator again
+EOF
+    puts err_message
+    exit(1)
+end
+
+# Find all headings
+headings = markdown.select { |line| line.match /^#+ / }
+
+min = 999
+
+headings.each do |h|
+    size = h.count "#"
+    min = size if size < min
+end
+
+padding = Array.new(4, " ").join
+
+toc = ""
+headings.each do |h|
+    size = h.count "#"
+
+    indentation = size - min
+
+    while indentation > 0
+        toc += padding
+        indentation -= 1
+    end
+
+    heading = h.gsub(/^#+ /, '')
+    slug    = heading.downcase.strip.gsub(' ', '-').gsub(/([^\w-]|_)/, '').gsub(/-+/, '-')
+
+    toc += "- [#{heading}](##{slug})\n"
+end
+
+puts "TOC:\n\n"
+puts toc
