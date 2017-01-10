@@ -4,6 +4,12 @@ def divider
     puts "---"
 end
 
+def pbcopy(input)
+  str = input.to_s
+  IO.popen('pbcopy', 'w') { |f| f << str }
+  str
+end
+
 puts "Paste your markdown:"
 puts "(Type 'END' on a new line to end input)"
 
@@ -33,6 +39,9 @@ EOF
     puts err_message
     exit(1)
 end
+
+# Drop the last 'END' line
+markdown.pop
 
 # Find all headings
 headings = markdown.select { |line| line.match /^#+ / }
@@ -65,3 +74,11 @@ end
 
 puts "TOC:\n\n"
 puts toc
+
+doc = toc + "\n\n" + markdown.join("\n")
+
+divider
+pbcopy(doc)
+
+puts "\nThe whole doc was copied to your clipboard!"
+
